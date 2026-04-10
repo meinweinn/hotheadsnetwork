@@ -576,6 +576,12 @@ socialPlaceholders.forEach((link) => {
   link.addEventListener("click", (event) => {
     if (link.getAttribute("href") === "#") {
       event.preventDefault();
+      link.classList.remove("is-unavailable");
+      void link.offsetWidth;
+      link.classList.add("is-unavailable");
+      window.setTimeout(() => {
+        link.classList.remove("is-unavailable");
+      }, 680);
     }
   });
 });
