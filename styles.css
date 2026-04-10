@@ -1326,6 +1326,7 @@ body:not(.is-theme-gate) .theme-gate {
   position: relative;
   width: min(100%, 1180px);
   min-height: min(78vh, 760px);
+  height: min(78vh, 760px);
   display: block;
   text-align: center;
   padding: clamp(1rem, 2vh, 1.6rem) clamp(1rem, 1.8vw, 1.6rem);
@@ -1348,6 +1349,7 @@ body:not(.is-theme-gate) .theme-gate {
   display: grid;
   align-content: center;
   justify-items: center;
+  height: 100%;
 }
 
 .stage-card--welcome {
@@ -1359,6 +1361,7 @@ body:not(.is-theme-gate) .theme-gate {
   position: relative;
   width: min(100%, 1180px);
   min-height: min(78vh, 760px);
+  height: min(78vh, 760px);
   overflow: hidden;
   border-radius: 26px;
 }
@@ -1367,6 +1370,7 @@ body:not(.is-theme-gate) .theme-gate {
   position: relative;
   width: 100%;
   min-height: min(78vh, 760px);
+  height: min(78vh, 760px);
 }
 
 .stage-panel {
@@ -1374,6 +1378,7 @@ body:not(.is-theme-gate) .theme-gate {
   inset: 0;
   width: 100%;
   min-height: min(78vh, 760px);
+  height: min(78vh, 760px);
   padding: 0;
   display: grid;
   align-items: center;
@@ -2364,36 +2369,83 @@ body:not(.is-theme-gate) .theme-gate {
       0 10px 24px rgba(0, 0, 0, 0.18);
   }
 
-  .mobile-swipe-hint__arrow {
-    font-family: "Lucida Console", "Courier New", monospace;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  .mobile-swipe-hint__track {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 4rem;
+    height: 1.9rem;
+    padding-inline: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--theme-primary) 18%, rgba(255, 255, 255, 0.08));
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+      color-mix(in srgb, var(--theme-card-tint) 82%, transparent);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 10px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .mobile-swipe-hint__track::before {
+    content: "";
+    position: absolute;
+    left: 0.7rem;
+    right: 0.7rem;
+    top: 50%;
+    height: 1px;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-secondary) 54%, transparent), transparent);
+    opacity: 0.8;
   }
 
   .mobile-swipe-hint__gesture {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.9rem;
-    height: 1.9rem;
+    width: 1.5rem;
+    height: 1.5rem;
     color: var(--theme-secondary);
     filter: drop-shadow(0 0 12px color-mix(in srgb, var(--theme-primary) 34%, transparent));
-    animation: swipeGestureFloat 2.2s ease-in-out infinite;
+    animation: swipeGestureSlide 1.95s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
   }
 
   .mobile-swipe-hint__gesture svg {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 0.95rem;
+    height: 0.95rem;
   }
 
-  .mobile-swipe-hint__arrow {
+  .mobile-swipe-hint__chevron {
+    position: relative;
+    width: 0.62rem;
+    height: 0.62rem;
     color: var(--theme-secondary);
-    font-size: 1rem;
-    animation: swipeArrowPulse 1.8s ease-in-out infinite;
+    opacity: 0.78;
   }
 
-  .mobile-swipe-hint__arrow:last-child {
-    animation-delay: 0.2s;
+  .mobile-swipe-hint__chevron::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+  }
+
+  .mobile-swipe-hint__chevron--left {
+    animation: swipeChevronLeft 1.8s ease-in-out infinite;
+  }
+
+  .mobile-swipe-hint__chevron--left::before {
+    transform: rotate(-135deg);
+  }
+
+  .mobile-swipe-hint__chevron--right {
+    animation: swipeChevronRight 1.8s ease-in-out infinite;
+  }
+
+  .mobile-swipe-hint__chevron--right::before {
+    transform: rotate(45deg);
   }
 
   .stage-panel--projects .project-stack,
@@ -2628,14 +2680,14 @@ body:not(.is-theme-gate) .theme-gate {
     gap: 0.55rem;
   }
 
-  .mobile-swipe-hint__gesture {
-    width: 1.7rem;
-    height: 1.7rem;
+  .mobile-swipe-hint__track {
+    width: 3.35rem;
+    height: 1.72rem;
   }
 
   .mobile-swipe-hint__gesture svg {
-    width: 1.05rem;
-    height: 1.05rem;
+    width: 0.88rem;
+    height: 0.88rem;
   }
 
   .welcome-stat {
@@ -2752,26 +2804,38 @@ body:not(.is-theme-gate) .theme-gate {
   }
 }
 
-@keyframes swipeArrowPulse {
+@keyframes swipeGestureSlide {
   0%,
   100% {
     transform: translateX(0);
-    opacity: 0.68;
+    opacity: 0.9;
   }
   50% {
-    transform: translateX(3px);
+    transform: translateX(1.45rem);
     opacity: 1;
   }
 }
 
-@keyframes swipeGestureFloat {
+@keyframes swipeChevronLeft {
   0%,
   100% {
-    transform: translateX(0) translateY(0);
-    opacity: 0.86;
+    transform: translateX(0);
+    opacity: 0.42;
   }
   50% {
-    transform: translateX(1px) translateY(-2px);
-    opacity: 1;
+    transform: translateX(-3px);
+    opacity: 0.95;
+  }
+}
+
+@keyframes swipeChevronRight {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.42;
+  }
+  50% {
+    transform: translateX(3px);
+    opacity: 0.95;
   }
 }
