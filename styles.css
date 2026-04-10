@@ -2490,6 +2490,8 @@ body:not(.is-theme-gate) .theme-gate {
   .theme-gate {
     padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem max(0.9rem, env(safe-area-inset-bottom));
     align-items: center;
+    backdrop-filter: blur(3px) saturate(1.02);
+    -webkit-backdrop-filter: blur(3px) saturate(1.02);
   }
 
   .theme-gate__card {
@@ -2498,6 +2500,11 @@ body:not(.is-theme-gate) .theme-gate {
     max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     padding: 0.9rem;
     border-radius: 20px;
+    backdrop-filter: blur(10px) saturate(1.08);
+    -webkit-backdrop-filter: blur(10px) saturate(1.08);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+      0 14px 36px rgba(0, 0, 0, 0.2);
   }
 
   .theme-gate__head {
@@ -2517,11 +2524,13 @@ body:not(.is-theme-gate) .theme-gate {
     gap: 0.45rem;
     padding: 0.85rem;
     border-radius: 18px;
+    transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
   }
 
   .theme-choice__icon {
     width: 46px;
     height: 46px;
+    filter: drop-shadow(0 0 10px var(--theme-glow));
   }
 
   .theme-choice__title {
@@ -2540,6 +2549,9 @@ body:not(.is-theme-gate) .theme-gate {
   .theme-gate__confirm {
     padding: 0.9rem 1rem;
     border-radius: 18px;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 0 18px color-mix(in srgb, var(--theme-primary) 20%, transparent);
   }
 
   .theme-gate__confirm .welcome-button__label {
@@ -2558,6 +2570,34 @@ body:not(.is-theme-gate) .theme-gate {
 
   .top-controls__divider {
     display: none;
+  }
+
+  body.is-theme-gate .welcome-backdrop__orb,
+  body.is-theme-gate .welcome-backdrop__beam,
+  body.is-theme-gate .welcome-backdrop__grid,
+  body.is-theme-gate .welcome-hero__ring,
+  body.is-theme-gate .welcome-hero__spark,
+  body.is-theme-gate .welcome-hero__logo,
+  body.is-theme-gate .welcome-hero__glow {
+    animation: none !important;
+  }
+
+  body.is-theme-gate .welcome-backdrop__orb {
+    filter: blur(24px);
+    opacity: 0.34;
+  }
+
+  body.is-theme-gate .welcome-backdrop__beam {
+    opacity: 0.12;
+  }
+
+  body.is-theme-gate .welcome-backdrop__grid {
+    opacity: 0.08;
+  }
+
+  body.is-theme-gate .welcome-backdrop__image {
+    transition: none;
+    transform: translate3d(0, 0, 0) scale(1.02);
   }
 
   .theme-switcher {
@@ -2779,6 +2819,11 @@ body:not(.is-theme-gate) .theme-gate {
 }
 
 @media (hover: none) {
+  .theme-choice:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
   .theme-switcher__button:not(.is-active),
   .top-controls.is-expanded .theme-switcher__button:not(.is-active) {
     width: 42px;
