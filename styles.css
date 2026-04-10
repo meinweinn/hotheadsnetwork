@@ -2306,20 +2306,34 @@ body:not(.is-theme-gate) .theme-gate {
   }
 
   .stage-track {
-    width: 100%;
-    display: grid;
+    width: 300%;
+    display: flex;
+  }
+
+  .stage-viewport {
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .stage-viewport::-webkit-scrollbar {
+    display: none;
   }
 
   .stage-panel {
     position: relative;
     inset: auto;
-    width: 100%;
-    padding-inline: 0.25rem;
+    flex: 0 0 33.333333%;
+    width: 33.333333%;
+    padding-inline: 0.35rem;
     opacity: 1;
     pointer-events: auto;
     transform: none;
     filter: none;
     animation: none;
+    scroll-snap-align: center;
   }
 
   .stage-nav {
@@ -2479,6 +2493,16 @@ body:not(.is-theme-gate) .theme-gate {
   .welcome-hero {
     padding: 1.25rem 0.8rem;
     border-radius: 24px;
+  }
+
+  .stage-track {
+    width: 300%;
+  }
+
+  .stage-panel {
+    flex-basis: 33.333333%;
+    width: 33.333333%;
+    padding-inline: 0.2rem;
   }
 
   .stage-card--welcome {

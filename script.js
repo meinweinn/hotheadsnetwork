@@ -14,6 +14,7 @@ const audioToggle = document.querySelector("[data-audio-toggle]");
 const audioState = document.querySelector("[data-audio-state]");
 const copyCaButtons = document.querySelectorAll("[data-copy-ca]");
 const socialPlaceholders = document.querySelectorAll("[data-social-placeholder]");
+const stageViewport = document.querySelector(".stage-viewport");
 const stageTrack = document.querySelector("[data-stage-track]");
 const stagePanels = document.querySelectorAll("[data-stage-panel]");
 const stageNavButtons = document.querySelectorAll("[data-stage-nav]");
@@ -39,6 +40,7 @@ let currentStageIndex = 1;
 const stageOrder = ["projects", "welcome", "apply"];
 const stageTransitionMs = 820;
 let isStageAnimating = false;
+let mobileStageScrollTimer = null;
 
 const submitIntakeToGoogleSheets = async (payload) => {
   if (!googleScriptWebAppUrl) {
@@ -334,11 +336,18 @@ applyTheme(initialTheme, true);
 syncAudioUi();
 
 const syncStageUi = () => {
+  if (window.innerWidth <= 1000) {
+    stagePanels.forEach((panel, index) => {
+      panel.classList.toggle("is-active", index === currentStageIndex);
+      panel.classList.remove("is-before", "is-after");
+    });
+  } else {
   stagePanels.forEach((panel, index) => {
     panel.classList.toggle("is-active", index === currentStageIndex);
     panel.classList.toggle("is-before", index < currentStageIndex);
     panel.classList.toggle("is-after", index > currentStageIndex);
   });
+  }
 
   const prevButton = document.querySelector('[data-stage-nav="prev"]');
   const nextButton = document.querySelector('[data-stage-nav="next"]');
@@ -416,6 +425,40 @@ const goToStage = (nextIndex) => {
 };
 
 syncStageUi();
+
+const syncMobileStagePosition = (behavior = "auto") => {
+  if (!stageViewport || window.innerWidth > 1000) {
+    return;
+  }
+
+  const targetLeft = stageViewport.clientWidth * currentStageIndex;
+  stageViewport.scrollTo({ left: targetLeft, behavior });
+};
+
+window.addEventListener("resize", () => {
+  if (window.innerWidth <= 1000) {
+    syncMobileStagePosition("auto");
+  }
+});
+
+if (stageViewport) {
+  window.addEventListener("load", () => {
+    syncMobileStagePosition("auto");
+  });
+
+  stageViewport.addEventListener("scroll", () => {
+    if (window.innerWidth > 1000) {
+      return;
+    }
+
+    window.clearTimeout(mobileStageScrollTimer);
+    mobileStageScrollTimer = window.setTimeout(() => {
+      const nextIndex = Math.round(stageViewport.scrollLeft / Math.max(1, stageViewport.clientWidth));
+      currentStageIndex = Math.max(0, Math.min(stageOrder.length - 1, nextIndex));
+      syncStageUi();
+    }, 80);
+  });
+}
 
 if (topControls) {
   topControls.addEventListener("pointerenter", () => {
