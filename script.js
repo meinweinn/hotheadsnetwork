@@ -2,6 +2,8 @@ const themeStorageKey = "hotheads-network-theme-v1";
 const audioStorageKey = "hotheads-network-audio-v1";
 const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbw3ivKc79GDfEhbihBBcxM7QT6Lk8w3gvdPQ6tRdBmLOntSEDVUyTu4GveLUQn8qbcD/exec";
 const validThemes = new Set(["inferno", "toxic", "abyss"]);
+const audioMasterMultiplier = 2;
+const ambientMultiplier = 2;
 
 const themeGate = document.querySelector("[data-theme-gate]");
 const themeChoices = document.querySelectorAll("[data-theme-choice]");
@@ -99,7 +101,10 @@ const playTone = async ({
   }
 
   gainNode.gain.setValueAtTime(0.0001, audio.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(volume, audio.currentTime + 0.01);
+  gainNode.gain.exponentialRampToValueAtTime(
+    Math.min(1, volume * audioMasterMultiplier),
+    audio.currentTime + 0.01
+  );
   gainNode.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + duration);
 
   oscillator.connect(gainNode);
@@ -133,7 +138,7 @@ const playFilteredNoise = async ({
   filter.type = filterType;
   filter.frequency.setValueAtTime(frequency, audio.currentTime);
   filter.Q.setValueAtTime(q, audio.currentTime);
-  gainNode.gain.setValueAtTime(volume, audio.currentTime);
+  gainNode.gain.setValueAtTime(Math.min(1, volume * audioMasterMultiplier), audio.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + duration);
   source.connect(filter);
   filter.connect(gainNode);
@@ -228,7 +233,11 @@ const startWelcomeAmbient = async () => {
   filterNode.connect(gainNode);
   gainNode.connect(audio.destination);
   oscillator.start();
-  gainNode.gain.setTargetAtTime(0.0045, audio.currentTime, 0.9);
+  gainNode.gain.setTargetAtTime(
+    Math.min(1, 0.0045 * audioMasterMultiplier * ambientMultiplier),
+    audio.currentTime,
+    0.9
+  );
 
   welcomeAmbient = { oscillator, gainNode, filterNode };
 };
