@@ -293,25 +293,30 @@
                       </div>
                     </div>
 
-                    <div class="operator-roster" aria-label="Campaign operators">
+                    <div class="operator-roster" aria-label="Campaign operators" data-operator-roster="brent">
                       <div class="operator-roster__header">
                         <span class="operator-roster__title">Operators</span>
-                        <span class="operator-roster__count">12 Joined</span>
+                        <span class="operator-roster__count" data-operator-count>0 Joined</span>
                       </div>
-                      <div class="operator-roster__grid">
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@volt</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@drip</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@mango</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@zen</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@vanta</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@koi</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@rift</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@bravo</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@ember</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@luna</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@nova</span>
-                        <span class="operator-pill"><span class="operator-pill__dot"></span>@onyx</span>
-                      </div>
+                      <div class="operator-roster__grid" data-operator-grid></div>
+                      <form class="operator-entry" data-operator-form="brent" hidden autocomplete="off">
+                        <label class="operator-entry__field">
+                          <span class="sr-only">Add operator handle</span>
+                          <input
+                            class="operator-entry__input"
+                            type="text"
+                            name="operator_handle"
+                            placeholder="@operator"
+                            autocomplete="off"
+                            autocapitalize="none"
+                            autocorrect="off"
+                            spellcheck="false"
+                          />
+                        </label>
+                        <button class="operator-entry__submit" type="submit">
+                          <span>Add Operator</span>
+                        </button>
+                      </form>
                     </div>
                   </div>
                 </article>
@@ -384,6 +389,16 @@
                   <span class="network-check__box" aria-hidden="true"></span>
                   <span class="network-check__label">I confirm that I follow on Twitter.</span>
                 </label>
+                <div class="network-form__actions network-form__actions--admin network-form__full" data-admin-sheet-access hidden>
+                  <a
+                    class="welcome-button welcome-button--primary welcome-button--sheet"
+                    href="https://docs.google.com/spreadsheets/d/1aJLUj6DDrRk3tBRUsHOdwS7D3qy91yMsnXJwVKMTprk/edit?usp=sharing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span class="welcome-button__label">Open Intake Sheet</span>
+                  </a>
+                </div>
                 <div class="network-form__actions network-form__full">
                   <button class="welcome-button welcome-button--primary welcome-button--intake" type="submit">
                     <span class="welcome-button__label">Save Intake</span>

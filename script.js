@@ -2,7 +2,7 @@ const themeStorageKey = "hotheads-network-theme-v1";
 const audioStorageKey = "hotheads-network-audio-v1";
 const audioVolumeStorageKey = "hotheads-network-audio-volume-v1";
 const adminSessionStorageKey = "hotheads-network-admin-session-v1";
-const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbw3ivKc79GDfEhbihBBcxM7QT6Lk8w3gvdPQ6tRdBmLOntSEDVUyTu4GveLUQn8qbcD/exec";
+const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbxSIcNKIbCB9j_hGH3Un181s3byo222bxg2gelA-uAZkWg-KbnDnr1JWi0yyfadETpzfw/exec";
 const validThemes = new Set(["inferno", "toxic", "abyss"]);
 const audioMasterMultiplier = 2;
 const ambientMultiplier = 2;
@@ -30,8 +30,11 @@ const adminRole = document.querySelector("[data-admin-role]");
 const adminName = document.querySelector("[data-admin-name]");
 const adminCapabilities = document.querySelector("[data-admin-capabilities]");
 const adminLogout = document.querySelector("[data-admin-logout]");
+const adminSheetAccess = document.querySelector("[data-admin-sheet-access]");
 const copyCaButtons = document.querySelectorAll("[data-copy-ca]");
 const socialPlaceholders = document.querySelectorAll("[data-social-placeholder]");
+const operatorRosters = document.querySelectorAll("[data-operator-roster]");
+const operatorForms = document.querySelectorAll("[data-operator-form]");
 const stageViewport = document.querySelector(".stage-viewport");
 const stageTrack = document.querySelector("[data-stage-track]");
 const stagePanels = document.querySelectorAll("[data-stage-panel]");
@@ -126,6 +129,25 @@ const adminRoleCapabilities = {
   ],
 };
 
+const campaignOperatorsState = {
+  brent: [],
+};
+
+const campaignOperatorsLoadState = {
+  brent: false,
+};
+
+const escapeHtml = (value) =>
+  String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+const canManageOperators = () =>
+  Boolean(adminSession && (adminSession.role === "admin" || adminSession.role === "editor"));
+
 document.body.classList.toggle("is-firefox", isFirefox);
 
 const submitIntakeToGoogleSheets = async (payload) => {
@@ -142,6 +164,78 @@ const submitIntakeToGoogleSheets = async (payload) => {
     body: JSON.stringify(payload),
   });
 };
+
+const submitOperatorToGoogleSheets = async (payload) => {
+  if (!googleScriptWebAppUrl) {
+    throw new Error("Google Sheets endpoint not configured");
+  }
+
+  await fetch(googleScriptWebAppUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body: JSON.stringify({
+      type: "addOperator",
+      ...payload,
+    }),
+  });
+};
+
+const deleteOperatorFromGoogleSheets = async (payload) => {
+  if (!googleScriptWebAppUrl) {
+    throw new Error("Google Sheets endpoint not configured");
+  }
+
+  await fetch(googleScriptWebAppUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body: JSON.stringify({
+      type: "deleteOperator",
+      ...payload,
+    }),
+  });
+};
+
+const requestGoogleScriptJsonp = (params) =>
+  new Promise((resolve, reject) => {
+    if (!googleScriptWebAppUrl) {
+      reject(new Error("Google Sheets endpoint not configured"));
+      return;
+    }
+
+    const callbackName = `__hhJsonp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const script = document.createElement("script");
+    const query = new URLSearchParams({ ...params, callback: callbackName });
+    const cleanup = () => {
+      delete window[callbackName];
+      script.remove();
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("JSONP timeout"));
+    }, 7000);
+
+    window[callbackName] = (data) => {
+      window.clearTimeout(timeoutId);
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      window.clearTimeout(timeoutId);
+      cleanup();
+      reject(new Error("JSONP failed"));
+    };
+
+    script.src = `${googleScriptWebAppUrl}?${query.toString()}`;
+    document.body.appendChild(script);
+  });
 
 const ensureAudio = async () => {
   if (!window.AudioContext && !window.webkitAudioContext) {
@@ -329,6 +423,17 @@ const syncAdminUi = () => {
   adminDashboard.hidden = !isLoggedIn;
   adminAuthView.setAttribute("aria-hidden", isLoggedIn ? "true" : "false");
   adminDashboard.setAttribute("aria-hidden", isLoggedIn ? "false" : "true");
+  const canAccessSheet = isLoggedIn && (adminSession.role === "admin" || adminSession.role === "editor");
+  const canManageOperators = canAccessSheet;
+  if (adminSheetAccess) {
+    adminSheetAccess.hidden = !canAccessSheet;
+  }
+  operatorForms.forEach((form) => {
+    form.hidden = !canManageOperators;
+  });
+  Object.keys(campaignOperatorsState).forEach((campaignId) => {
+    renderOperatorRoster(campaignId);
+  });
 
   if (!isLoggedIn) {
     if (adminCapabilities) {
@@ -340,6 +445,81 @@ const syncAdminUi = () => {
   adminRole.textContent = adminSession.role;
   adminName.textContent = adminSession.name;
   renderAdminCapabilities(adminSession.role);
+};
+
+const renderOperatorRoster = (campaignId) => {
+  const roster = document.querySelector(`[data-operator-roster="${campaignId}"]`);
+  if (!roster) {
+    return;
+  }
+
+  const grid = roster.querySelector("[data-operator-grid]");
+  const count = roster.querySelector("[data-operator-count]");
+  const operators = Array.isArray(campaignOperatorsState[campaignId])
+    ? campaignOperatorsState[campaignId]
+    : [];
+  const showDelete = canManageOperators();
+
+  if (count) {
+    count.textContent = `${operators.length} Joined`;
+  }
+
+  if (!grid) {
+    return;
+  }
+
+  if (!campaignOperatorsLoadState[campaignId]) {
+    grid.innerHTML = '<span class="operator-roster__empty">Loading operators...</span>';
+    return;
+  }
+
+  if (!operators.length) {
+    grid.innerHTML = '<span class="operator-roster__empty">No operators added yet.</span>';
+    return;
+  }
+
+  grid.innerHTML = operators
+    .map(
+      (handle) => `
+        <span class="operator-pill">
+          <span class="operator-pill__dot"></span>
+          <span class="operator-pill__handle">${escapeHtml(handle)}</span>
+          ${
+            showDelete
+              ? `<button
+                  class="operator-pill__remove"
+                  type="button"
+                  aria-label="Remove ${escapeHtml(handle)}"
+                  data-operator-remove="${escapeHtml(handle)}"
+                  data-operator-campaign="${campaignId}"
+                >&times;</button>`
+              : ""
+          }
+        </span>
+      `
+    )
+    .join("");
+};
+
+const loadCampaignOperators = async (campaignId) => {
+  try {
+    const response = await requestGoogleScriptJsonp({
+      action: "listOperators",
+      campaign_id: campaignId,
+    });
+
+    if (response && response.ok && Array.isArray(response.operators)) {
+      const nextOperators = response.operators
+        .map((entry) => String(entry.operator_handle || "").trim())
+        .filter(Boolean);
+
+      campaignOperatorsState[campaignId] = Array.from(new Set(nextOperators));
+    }
+  } catch {}
+
+  campaignOperatorsLoadState[campaignId] = true;
+
+  renderOperatorRoster(campaignId);
 };
 
 const openAdminPanel = () => {
@@ -617,6 +797,10 @@ const goToStage = (nextIndex) => {
 };
 
 syncStageUi();
+Object.keys(campaignOperatorsState).forEach((campaignId) => {
+  renderOperatorRoster(campaignId);
+  loadCampaignOperators(campaignId);
+});
 
 const syncMobileStagePosition = (behavior = "auto") => {
   if (!stageViewport || window.innerWidth > 1000) {
@@ -778,6 +962,109 @@ if (adminLoginForm) {
     uiSound("confirm");
   });
 }
+
+operatorForms.forEach((form) => {
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    if (!adminSession || (adminSession.role !== "admin" && adminSession.role !== "editor")) {
+      return;
+    }
+
+    const campaignId = form.dataset.operatorForm;
+    const input = form.querySelector(".operator-entry__input");
+    const submitButton = form.querySelector(".operator-entry__submit");
+    if (!campaignId || !input || !submitButton) {
+      return;
+    }
+
+    const normalizedHandle = String(input.value || "")
+      .trim()
+      .replace(/\s+/g, "");
+    const operatorHandle = normalizedHandle.startsWith("@")
+      ? normalizedHandle
+      : `@${normalizedHandle}`;
+
+    if (operatorHandle.length < 2) {
+      input.classList.remove("is-invalid");
+      void input.offsetWidth;
+      input.classList.add("is-invalid");
+      return;
+    }
+
+    input.classList.remove("is-invalid");
+    const currentOperators = campaignOperatorsState[campaignId] || [];
+    const exists = currentOperators.some(
+      (handle) => handle.toLowerCase() === operatorHandle.toLowerCase()
+    );
+    if (exists) {
+      input.classList.remove("is-invalid");
+      void input.offsetWidth;
+      input.classList.add("is-invalid");
+      return;
+    }
+
+    campaignOperatorsState[campaignId] = [...currentOperators, operatorHandle];
+    renderOperatorRoster(campaignId);
+    input.value = "";
+    submitButton.classList.add("is-saved");
+    uiSound("confirm");
+
+    window.setTimeout(() => {
+      submitButton.classList.remove("is-saved");
+    }, 1200);
+
+    submitOperatorToGoogleSheets({
+      campaign_id: campaignId,
+      operator_handle: operatorHandle,
+      added_by: adminSession.username,
+      status: "active",
+    }).catch(() => {
+      campaignOperatorsState[campaignId] = currentOperators;
+      renderOperatorRoster(campaignId);
+      input.classList.remove("is-invalid");
+      void input.offsetWidth;
+      input.classList.add("is-invalid");
+    });
+  });
+});
+
+operatorRosters.forEach((roster) => {
+  roster.addEventListener("click", (event) => {
+    const removeButton = event.target.closest("[data-operator-remove]");
+    if (!removeButton || !canManageOperators()) {
+      return;
+    }
+
+    const campaignId = removeButton.getAttribute("data-operator-campaign");
+    const operatorHandle = removeButton.getAttribute("data-operator-remove");
+    if (!campaignId || !operatorHandle) {
+      return;
+    }
+
+    const currentOperators = campaignOperatorsState[campaignId] || [];
+    const nextOperators = currentOperators.filter(
+      (handle) => handle.toLowerCase() !== operatorHandle.toLowerCase()
+    );
+
+    if (nextOperators.length === currentOperators.length) {
+      return;
+    }
+
+    campaignOperatorsState[campaignId] = nextOperators;
+    renderOperatorRoster(campaignId);
+    uiSound("click");
+
+    deleteOperatorFromGoogleSheets({
+      campaign_id: campaignId,
+      operator_handle: operatorHandle,
+      removed_by: adminSession?.username || "",
+    }).catch(() => {
+      campaignOperatorsState[campaignId] = currentOperators;
+      renderOperatorRoster(campaignId);
+    });
+  });
+});
 
 if (adminPasswordInput && adminPasswordToggle) {
   const revealAdminPassword = () => {

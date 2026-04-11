@@ -32,6 +32,10 @@
   --logo-spark-tail: rgba(255, 161, 73, 0.1);
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body[data-theme="inferno"] {
   --theme-primary: rgba(255, 122, 50, 1);
   --theme-secondary: rgba(255, 193, 94, 1);
@@ -1516,6 +1520,32 @@ body:not(.is-theme-gate) .theme-gate {
   letter-spacing: 0.12em;
 }
 
+.network-form__actions--admin {
+  margin-top: 0.1rem;
+}
+
+.welcome-button--sheet {
+  width: 100%;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  text-decoration: none;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--theme-primary) 16%, white 6%), rgba(255, 255, 255, 0.02) 42%, var(--theme-card-tint)),
+    rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 16px 34px rgba(0, 0, 0, 0.18),
+    0 0 22px color-mix(in srgb, var(--theme-primary) 16%, transparent);
+}
+
+.welcome-button--sheet .welcome-button__label {
+  width: 100%;
+  text-align: center;
+}
+
 .admin-panel__identity {
   display: flex;
   align-items: center;
@@ -2419,6 +2449,104 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary) 36%, transparent);
 }
 
+.operator-pill__handle {
+  min-width: 0;
+}
+
+.operator-pill__remove {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 0.1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--welcome-muted);
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.operator-pill__remove:hover {
+  background: rgba(255, 96, 96, 0.18);
+  color: #ff7e7e;
+  transform: scale(1.06);
+  box-shadow: 0 0 16px rgba(255, 80, 80, 0.18);
+}
+
+.operator-roster__empty {
+  color: var(--welcome-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.operator-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  margin-top: 0.2rem;
+}
+
+.operator-entry__field {
+  min-width: 0;
+}
+
+.operator-entry__input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015) 44%, var(--theme-card-tint)),
+    rgba(255, 255, 255, 0.02);
+  color: var(--welcome-text);
+}
+
+.operator-entry__input.is-invalid {
+  border-color: rgba(255, 96, 96, 0.64);
+  box-shadow: 0 0 0 1px rgba(255, 80, 80, 0.08) inset, 0 0 20px rgba(255, 70, 70, 0.16);
+}
+
+.operator-entry__submit {
+  min-width: 146px;
+  min-height: 42px;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--theme-primary) 20%, white 6%), rgba(255, 255, 255, 0.02) 42%, var(--theme-card-tint)),
+    rgba(255, 255, 255, 0.03);
+  color: var(--welcome-text);
+  font-family: "Lucida Console", "Courier New", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 14px 28px rgba(0, 0, 0, 0.18);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.operator-entry__submit:hover {
+  transform: translateY(-2px);
+  border-color: var(--theme-card-edge);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 0 22px var(--theme-glow);
+}
+
+.operator-entry__submit.is-saved {
+  border-color: rgba(156, 240, 107, 0.32);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 0 22px rgba(156, 240, 107, 0.22);
+}
+
 .welcome-hero__spark {
   position: absolute;
   width: 10px;
@@ -3277,6 +3405,15 @@ body.is-firefox .stage-panel.is-exiting-to-right {
     min-height: 32px;
     padding: 0.46rem 0.64rem;
     font-size: 0.68rem;
+  }
+
+  .operator-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .operator-entry__submit {
+    width: 100%;
+    min-width: 0;
   }
 
   .admin-panel__card {
