@@ -2692,6 +2692,47 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   margin-top: 0;
 }
 
+.site-signature {
+  position: absolute;
+  left: 50%;
+  bottom: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62rem;
+  padding: 0.42rem 0.72rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02) 44%, var(--theme-card-tint)),
+    rgba(18, 7, 4, 0.12);
+  backdrop-filter: blur(14px) saturate(1.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 14px 30px rgba(0, 0, 0, 0.18);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.site-signature__label {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--welcome-text) 64%, transparent);
+  line-height: 1;
+}
+
+.site-signature__icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  transform: translateY(-1px);
+  filter:
+    drop-shadow(0 0 10px color-mix(in srgb, var(--theme-glow) 42%, transparent))
+    saturate(1.04);
+}
+
 .welcome-stat {
   min-width: 150px;
   padding: 0.72rem 0.9rem;
@@ -2951,11 +2992,11 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   }
 
   .welcome-stage {
-    min-height: auto;
-    width: min(100% - 1.2rem, 100%);
-    padding-top: 5.2rem;
-    padding-bottom: 1.2rem;
-  }
+      min-height: auto;
+      width: min(100% - 1.2rem, 100%);
+      padding-top: 5.2rem;
+      padding-bottom: 3.9rem;
+    }
 
   .theme-gate__grid {
     grid-template-columns: 1fr;
@@ -3471,11 +3512,17 @@ body.is-firefox .stage-panel.is-exiting-to-right {
     gap: 0.7rem;
   }
 
-  .mobile-swipe-hint {
-    margin-top: 0.45rem;
-    padding: 0.42rem 0.7rem;
-    gap: 0.55rem;
-  }
+    .mobile-swipe-hint {
+      margin-top: 0.45rem;
+      padding: 0.42rem 0.7rem;
+      gap: 0.55rem;
+    }
+
+    .site-signature {
+      position: static;
+      margin: 0.4rem auto 0;
+      transform: none;
+    }
 
   .mobile-swipe-hint__track {
     width: 3.35rem;
