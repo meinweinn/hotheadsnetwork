@@ -1,5 +1,7 @@
 const themeStorageKey = "hotheads-network-theme-v1";
 const audioStorageKey = "hotheads-network-audio-v1";
+const audioVolumeStorageKey = "hotheads-network-audio-volume-v1";
+const adminSessionStorageKey = "hotheads-network-admin-session-v1";
 const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbw3ivKc79GDfEhbihBBcxM7QT6Lk8w3gvdPQ6tRdBmLOntSEDVUyTu4GveLUQn8qbcD/exec";
 const validThemes = new Set(["inferno", "toxic", "abyss"]);
 const audioMasterMultiplier = 2;
@@ -15,6 +17,19 @@ const welcomeLogo = document.querySelector("[data-welcome-logo]");
 const topControls = document.querySelector(".top-controls");
 const audioToggle = document.querySelector("[data-audio-toggle]");
 const audioState = document.querySelector("[data-audio-state]");
+const audioVolumeSlider = document.querySelector("[data-audio-volume]");
+const adminToggle = document.querySelector("[data-admin-toggle]");
+const adminPanel = document.querySelector("[data-admin-panel]");
+const adminCloseButtons = document.querySelectorAll("[data-admin-close]");
+const adminLoginForm = document.querySelector("[data-admin-login]");
+const adminPasswordInput = document.querySelector("[data-admin-password]");
+const adminPasswordToggle = document.querySelector("[data-admin-password-toggle]");
+const adminAuthView = document.querySelector("[data-admin-auth]");
+const adminDashboard = document.querySelector("[data-admin-dashboard]");
+const adminRole = document.querySelector("[data-admin-role]");
+const adminName = document.querySelector("[data-admin-name]");
+const adminCapabilities = document.querySelector("[data-admin-capabilities]");
+const adminLogout = document.querySelector("[data-admin-logout]");
 const copyCaButtons = document.querySelectorAll("[data-copy-ca]");
 const socialPlaceholders = document.querySelectorAll("[data-social-placeholder]");
 const stageViewport = document.querySelector(".stage-viewport");
@@ -39,11 +54,77 @@ const themeLogos = {
 let audioContext = null;
 let welcomeAmbient = null;
 let audioEnabled = window.localStorage.getItem(audioStorageKey) !== "off";
+let audioVolume = Math.min(1, Math.max(0, Number(window.localStorage.getItem(audioVolumeStorageKey) || "1")));
 let currentStageIndex = 1;
 const stageOrder = ["projects", "welcome", "apply"];
 const stageTransitionMs = isFirefox ? 620 : 820;
+const adminPanelTransitionMs = 300;
 let isStageAnimating = false;
 let mobileStageScrollTimer = null;
+let adminPanelCloseTimer = null;
+let adminSession = null;
+
+const adminUsers = [
+  {
+    username: "opslead",
+    password: "hotheads-admin",
+    role: "admin",
+    name: "Ops Lead",
+  },
+  {
+    username: "campaign",
+    password: "hotheads-editor",
+    role: "editor",
+    name: "Campaign Editor",
+  },
+  {
+    username: "viewer",
+    password: "hotheads-view",
+    role: "viewer",
+    name: "Read Only",
+  },
+];
+
+const adminRoleCapabilities = {
+  admin: [
+    {
+      title: "Full Control",
+      body: "Manage campaign cards, rotate credentials, and control all operator-facing states.",
+    },
+    {
+      title: "Role Management",
+      body: "Grant access levels for admins, editors, and viewers across the network surface.",
+    },
+    {
+      title: "System Oversight",
+      body: "Review intake submissions, campaign links, and milestone progression from one place.",
+    },
+  ],
+  editor: [
+    {
+      title: "Campaign Editing",
+      body: "Update active cards, milestone states, social links, and operator roster content.",
+    },
+    {
+      title: "Roster Control",
+      body: "Maintain the joined operators list and verify social/contract metadata per campaign.",
+    },
+    {
+      title: "Submission Review",
+      body: "Inspect intake entries and prepare operator data for internal action.",
+    },
+  ],
+  viewer: [
+    {
+      title: "Read Only Access",
+      body: "Inspect live campaign status, roster health, and operator intake without edit rights.",
+    },
+    {
+      title: "Audit Trail",
+      body: "Track who joined, which milestones hit, and what information was submitted.",
+    },
+  ],
+};
 
 document.body.classList.toggle("is-firefox", isFirefox);
 
@@ -105,7 +186,7 @@ const playTone = async ({
 
   gainNode.gain.setValueAtTime(0.0001, audio.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(
-    Math.min(1, volume * audioMasterMultiplier),
+    Math.min(1, volume * audioMasterMultiplier * audioVolume),
     audio.currentTime + 0.01
   );
   gainNode.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + duration);
@@ -141,7 +222,10 @@ const playFilteredNoise = async ({
   filter.type = filterType;
   filter.frequency.setValueAtTime(frequency, audio.currentTime);
   filter.Q.setValueAtTime(q, audio.currentTime);
-  gainNode.gain.setValueAtTime(Math.min(1, volume * audioMasterMultiplier), audio.currentTime);
+  gainNode.gain.setValueAtTime(
+    Math.min(1, volume * audioMasterMultiplier * audioVolume),
+    audio.currentTime
+  );
   gainNode.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + duration);
   source.connect(filter);
   filter.connect(gainNode);
@@ -210,6 +294,80 @@ const syncAudioUi = () => {
   audioToggle.setAttribute("aria-label", nextLabel);
   audioToggle.setAttribute("title", nextLabel);
   audioState.textContent = audioEnabled ? "On" : "Muted";
+
+  if (audioVolumeSlider) {
+    audioVolumeSlider.value = String(Math.round(audioVolume * 100));
+    audioVolumeSlider.disabled = !audioEnabled;
+  }
+};
+
+const renderAdminCapabilities = (role) => {
+  if (!adminCapabilities) {
+    return;
+  }
+
+  const items = adminRoleCapabilities[role] || [];
+  adminCapabilities.innerHTML = items
+    .map(
+      (item) => `
+        <article class="admin-capability">
+          <strong>${item.title}</strong>
+          <span>${item.body}</span>
+        </article>
+      `
+    )
+    .join("");
+};
+
+const syncAdminUi = () => {
+  if (!adminAuthView || !adminDashboard || !adminRole || !adminName) {
+    return;
+  }
+
+  const isLoggedIn = Boolean(adminSession);
+  adminAuthView.hidden = isLoggedIn;
+  adminDashboard.hidden = !isLoggedIn;
+  adminAuthView.setAttribute("aria-hidden", isLoggedIn ? "true" : "false");
+  adminDashboard.setAttribute("aria-hidden", isLoggedIn ? "false" : "true");
+
+  if (!isLoggedIn) {
+    if (adminCapabilities) {
+      adminCapabilities.innerHTML = "";
+    }
+    return;
+  }
+
+  adminRole.textContent = adminSession.role;
+  adminName.textContent = adminSession.name;
+  renderAdminCapabilities(adminSession.role);
+};
+
+const openAdminPanel = () => {
+  if (!adminPanel) {
+    return;
+  }
+
+  window.clearTimeout(adminPanelCloseTimer);
+  adminPanel.hidden = false;
+  adminPanel.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    adminPanel.classList.add("is-open");
+  });
+  uiSound("click");
+  syncAdminUi();
+};
+
+const closeAdminPanel = () => {
+  if (!adminPanel) {
+    return;
+  }
+
+  adminPanel.classList.remove("is-open");
+  adminPanel.setAttribute("aria-hidden", "true");
+  window.clearTimeout(adminPanelCloseTimer);
+  adminPanelCloseTimer = window.setTimeout(() => {
+    adminPanel.hidden = true;
+  }, adminPanelTransitionMs);
 };
 
 const startWelcomeAmbient = async () => {
@@ -237,7 +395,7 @@ const startWelcomeAmbient = async () => {
   gainNode.connect(audio.destination);
   oscillator.start();
   gainNode.gain.setTargetAtTime(
-    Math.min(1, 0.0045 * audioMasterMultiplier * ambientMultiplier),
+    Math.min(1, 0.0045 * audioMasterMultiplier * ambientMultiplier * audioVolume),
     audio.currentTime,
     0.9
   );
@@ -245,8 +403,29 @@ const startWelcomeAmbient = async () => {
   welcomeAmbient = { oscillator, gainNode, filterNode };
 };
 
+const updateWelcomeAmbientLevel = () => {
+  if (!welcomeAmbient || !audioContext) {
+    return;
+  }
+
+  const target = audioEnabled
+    ? Math.min(1, 0.0045 * audioMasterMultiplier * ambientMultiplier * audioVolume)
+    : 0.0001;
+  welcomeAmbient.gainNode.gain.cancelScheduledValues(audioContext.currentTime);
+  welcomeAmbient.gainNode.gain.setTargetAtTime(target, audioContext.currentTime, 0.12);
+};
+
 const storedTheme = window.localStorage.getItem(themeStorageKey);
 const initialTheme = validThemes.has(storedTheme) ? storedTheme : "inferno";
+const storedAdminSession = window.localStorage.getItem(adminSessionStorageKey);
+
+if (storedAdminSession) {
+  try {
+    adminSession = JSON.parse(storedAdminSession);
+  } catch {
+    adminSession = null;
+  }
+}
 
 let welcomeBgSwapId = 0;
 let welcomeLogoSwapId = 0;
@@ -346,6 +525,7 @@ const applyTheme = (theme, immediate = false) => {
 
 applyTheme(initialTheme, true);
 syncAudioUi();
+syncAdminUi();
 
 const syncStageUi = () => {
   if (window.innerWidth <= 1000) {
@@ -536,6 +716,108 @@ if (audioToggle) {
     stopWelcomeAmbient();
   });
 }
+
+if (audioVolumeSlider) {
+  audioVolumeSlider.addEventListener("input", () => {
+    audioVolume = Math.min(1, Math.max(0, Number(audioVolumeSlider.value) / 100));
+    window.localStorage.setItem(audioVolumeStorageKey, String(audioVolume));
+    updateWelcomeAmbientLevel();
+  });
+
+  const releaseAudioSliderFocus = () => {
+    audioVolumeSlider.blur();
+  };
+
+  audioVolumeSlider.addEventListener("change", releaseAudioSliderFocus);
+  audioVolumeSlider.addEventListener("pointerup", releaseAudioSliderFocus);
+  audioVolumeSlider.addEventListener("touchend", releaseAudioSliderFocus);
+}
+
+if (adminToggle) {
+  adminToggle.addEventListener("click", () => {
+    if (adminPanel && !adminPanel.hidden) {
+      closeAdminPanel();
+      return;
+    }
+
+    openAdminPanel();
+  });
+}
+
+adminCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeAdminPanel);
+});
+
+if (adminLoginForm) {
+  adminLoginForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(adminLoginForm);
+    const username = String(formData.get("username") || "").trim().toLowerCase();
+    const password = String(formData.get("password") || "").trim();
+    const matchedUser = adminUsers.find(
+      (user) => user.username.toLowerCase() === username && user.password === password
+    );
+
+    if (!matchedUser) {
+      adminLoginForm.classList.remove("is-invalid");
+      void adminLoginForm.offsetWidth;
+      adminLoginForm.classList.add("is-invalid");
+      return;
+    }
+
+    adminSession = {
+      username: matchedUser.username,
+      role: matchedUser.role,
+      name: matchedUser.name,
+    };
+    window.localStorage.setItem(adminSessionStorageKey, JSON.stringify(adminSession));
+    adminLoginForm.reset();
+    adminLoginForm.classList.remove("is-invalid");
+    syncAdminUi();
+    uiSound("confirm");
+  });
+}
+
+if (adminPasswordInput && adminPasswordToggle) {
+  const revealAdminPassword = () => {
+    adminPasswordInput.type = "text";
+  };
+
+  const hideAdminPassword = () => {
+    adminPasswordInput.type = "password";
+  };
+
+  adminPasswordToggle.addEventListener("mouseenter", revealAdminPassword);
+  adminPasswordToggle.addEventListener("mouseleave", hideAdminPassword);
+  adminPasswordToggle.addEventListener("focus", revealAdminPassword);
+  adminPasswordToggle.addEventListener("blur", hideAdminPassword);
+  adminPasswordToggle.addEventListener("pointerdown", revealAdminPassword);
+  adminPasswordToggle.addEventListener("pointerup", hideAdminPassword);
+  adminPasswordToggle.addEventListener("touchstart", revealAdminPassword, { passive: true });
+  adminPasswordToggle.addEventListener("touchend", hideAdminPassword);
+  adminPasswordToggle.addEventListener("touchcancel", hideAdminPassword);
+}
+
+if (adminLogout) {
+  adminLogout.addEventListener("click", () => {
+    adminSession = null;
+    window.localStorage.removeItem(adminSessionStorageKey);
+    if (adminLoginForm) {
+      adminLoginForm.reset();
+      adminLoginForm.classList.remove("is-invalid");
+    }
+    syncAdminUi();
+    uiSound("click");
+    closeAdminPanel();
+  });
+}
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && adminPanel && !adminPanel.hidden) {
+    closeAdminPanel();
+  }
+});
 
 themeChoices.forEach((choice) => {
   choice.addEventListener("click", () => {

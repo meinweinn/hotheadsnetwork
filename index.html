@@ -70,6 +70,14 @@
 
         <div class="top-controls__divider" aria-hidden="true"></div>
 
+        <button class="admin-toggle" type="button" aria-label="Open admin panel" data-admin-toggle>
+          <span class="admin-toggle__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="presentation">
+              <path fill="currentColor" d="M12 2 4 5v6c0 5.23 3.44 10.04 8 11 4.56-.96 8-5.77 8-11V5l-8-3Zm0 2.12 6 2.25v4.63c0 4.23-2.67 8.22-6 9.1-3.33-.88-6-4.87-6-9.1V6.37l6-2.25Zm0 2.38a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4Zm-3.8 7.7c.7-1.2 2.1-1.95 3.8-1.95 1.7 0 3.1.75 3.8 1.95l-1.56.9c-.42-.67-1.26-1.05-2.24-1.05s-1.82.38-2.24 1.05l-1.56-.9Z"/>
+            </svg>
+          </span>
+        </button>
+
         <button class="audio-toggle" type="button" aria-label="Toggle audio" data-audio-toggle>
           <span class="audio-toggle__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" role="presentation" class="audio-toggle__svg">
@@ -108,7 +116,75 @@
           </span>
           <span class="audio-toggle__state sr-only" data-audio-state>On</span>
         </button>
+
+        <label class="audio-volume" aria-label="Audio volume">
+          <span class="sr-only">Audio volume</span>
+          <input
+            class="audio-volume__slider"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value="100"
+            data-audio-volume
+          />
+        </label>
       </div>
+
+      <section class="admin-panel" data-admin-panel aria-hidden="true" hidden>
+        <div class="admin-panel__backdrop" data-admin-close></div>
+        <div class="admin-panel__card" role="dialog" aria-modal="true" aria-labelledby="admin-panel-title">
+          <div class="admin-panel__head">
+            <div>
+              <span class="eyebrow">Admin Access</span>
+              <h2 id="admin-panel-title">Control Layer</h2>
+            </div>
+            <button class="admin-panel__close" type="button" aria-label="Close admin panel" data-admin-close>&times;</button>
+          </div>
+
+          <div class="admin-panel__body" data-admin-auth>
+            <p class="admin-panel__copy">Role-based access for operators who manage campaigns, intake flow, and internal visibility.</p>
+            <form class="admin-login" data-admin-login autocomplete="off">
+              <label>
+                <span>Username</span>
+                <input type="text" name="username" placeholder="opslead" autocomplete="off" autocapitalize="none" spellcheck="false" required />
+              </label>
+              <label>
+                <span>Password</span>
+                <span class="admin-password-field">
+                  <input type="password" name="password" placeholder="Enter access key" autocomplete="new-password" required data-admin-password />
+                  <button
+                    class="admin-password-toggle"
+                    type="button"
+                    aria-label="Show password while hovering"
+                    data-admin-password-toggle
+                  >
+                    <svg viewBox="0 0 24 24" role="presentation">
+                      <path fill="currentColor" d="M12 5c4.86 0 8.84 2.95 10.68 7-1.84 4.05-5.82 7-10.68 7S3.16 16.05 1.32 12C3.16 7.95 7.14 5 12 5Zm0 1.8c-3.77 0-6.95 2.12-8.73 5.2 1.78 3.08 4.96 5.2 8.73 5.2s6.95-2.12 8.73-5.2c-1.78-3.08-4.96-5.2-8.73-5.2Zm0 1.85A3.35 3.35 0 1 1 12 15.35a3.35 3.35 0 0 1 0-6.7Zm0 1.8a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1Z"/>
+                    </svg>
+                  </button>
+                </span>
+              </label>
+              <button class="welcome-button welcome-button--primary admin-login__submit" type="submit">
+                <span class="welcome-button__label">Enter Admin Panel</span>
+              </button>
+              <p class="admin-panel__helper">Starter roles: `admin`, `editor`, `viewer`. Credentials can be rotated in config.</p>
+            </form>
+          </div>
+
+          <div class="admin-panel__body admin-panel__body--dashboard" data-admin-dashboard hidden>
+            <div class="admin-panel__identity">
+              <div>
+                <span class="admin-role" data-admin-role>Viewer</span>
+                <strong data-admin-name>Operator</strong>
+              </div>
+              <button class="admin-panel__logout" type="button" data-admin-logout>Logout</button>
+            </div>
+
+            <div class="admin-capabilities" data-admin-capabilities></div>
+          </div>
+        </div>
+      </section>
 
       <button
         class="stage-nav stage-nav--left"
@@ -216,6 +292,27 @@
                         </div>
                       </div>
                     </div>
+
+                    <div class="operator-roster" aria-label="Campaign operators">
+                      <div class="operator-roster__header">
+                        <span class="operator-roster__title">Operators</span>
+                        <span class="operator-roster__count">12 Joined</span>
+                      </div>
+                      <div class="operator-roster__grid">
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@volt</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@drip</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@mango</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@zen</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@vanta</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@koi</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@rift</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@bravo</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@ember</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@luna</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@nova</span>
+                        <span class="operator-pill"><span class="operator-pill__dot"></span>@onyx</span>
+                      </div>
+                    </div>
                   </div>
                 </article>
               </div>
@@ -268,18 +365,18 @@
                 <h2>Operator Intake</h2>
               </div>
 
-              <form class="network-form" data-network-form>
+              <form class="network-form" data-network-form autocomplete="off">
                 <label data-required-field="telegram">
                   <span>Telegram Username</span>
-                  <input type="text" name="telegram" placeholder="@username" required />
+                  <input type="text" name="telegram" placeholder="@username" required autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
                 </label>
                 <label data-required-field="twitter">
                   <span>Twitter Username</span>
-                  <input type="text" name="twitter" placeholder="@username" required />
+                  <input type="text" name="twitter" placeholder="@username" required autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
                 </label>
                 <label class="network-form__full" data-required-field="wallet">
                   <span>Wallet Address</span>
-                  <input type="text" name="wallet" placeholder="7YWHMfk9JZe0LM0g1ZauHuiSxhI..." required />
+                  <input type="text" name="wallet" placeholder="7YWHMfk9JZe0LM0g1ZauHuiSxhI..." required autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
                 </label>
                 <!-- custom checkbox for confirming Twitter follow -->
                 <label class="network-check network-check--compact" data-required-field="twitter_follow_confirm">
