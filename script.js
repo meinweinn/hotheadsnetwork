@@ -4,6 +4,7 @@ const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbw3ivKc79
 const validThemes = new Set(["inferno", "toxic", "abyss"]);
 const audioMasterMultiplier = 2;
 const ambientMultiplier = 2;
+const isFirefox = /firefox/i.test(window.navigator.userAgent);
 
 const themeGate = document.querySelector("[data-theme-gate]");
 const themeChoices = document.querySelectorAll("[data-theme-choice]");
@@ -40,9 +41,11 @@ let welcomeAmbient = null;
 let audioEnabled = window.localStorage.getItem(audioStorageKey) !== "off";
 let currentStageIndex = 1;
 const stageOrder = ["projects", "welcome", "apply"];
-const stageTransitionMs = 820;
+const stageTransitionMs = isFirefox ? 620 : 820;
 let isStageAnimating = false;
 let mobileStageScrollTimer = null;
+
+document.body.classList.toggle("is-firefox", isFirefox);
 
 const submitIntakeToGoogleSheets = async (payload) => {
   if (!googleScriptWebAppUrl) {

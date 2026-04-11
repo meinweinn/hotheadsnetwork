@@ -1426,6 +1426,31 @@ body:not(.is-theme-gate) .theme-gate {
   z-index: 2;
 }
 
+body.is-firefox .stage-panel {
+  filter: none;
+  will-change: transform, opacity;
+}
+
+body.is-firefox .stage-panel.is-active {
+  filter: none;
+}
+
+body.is-firefox .stage-panel.is-entering-from-right {
+  animation: stageEnterFromRightFirefox 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+body.is-firefox .stage-panel.is-entering-from-left {
+  animation: stageEnterFromLeftFirefox 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+body.is-firefox .stage-panel.is-exiting-to-left {
+  animation: stageExitToLeftFirefox 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+body.is-firefox .stage-panel.is-exiting-to-right {
+  animation: stageExitToRightFirefox 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 .stage-panel__header {
   display: grid;
   gap: 0.55rem;
@@ -2246,6 +2271,50 @@ body:not(.is-theme-gate) .theme-gate {
     opacity: 0;
     transform: translate3d(0, 0, 0) translateX(12%) scale(0.985);
     filter: blur(12px);
+  }
+}
+
+@keyframes stageEnterFromRightFirefox {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) translateX(8%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) translateX(0);
+  }
+}
+
+@keyframes stageEnterFromLeftFirefox {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) translateX(-8%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) translateX(0);
+  }
+}
+
+@keyframes stageExitToLeftFirefox {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) translateX(-8%);
+  }
+}
+
+@keyframes stageExitToRightFirefox {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) translateX(8%);
   }
 }
 
