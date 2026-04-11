@@ -379,16 +379,19 @@ const syncAudioUi = () => {
     return;
   }
 
-  const nextLabel = audioEnabled ? "Mute audio" : "Unmute audio";
-  audioToggle.classList.toggle("is-muted", !audioEnabled);
-  audioToggle.setAttribute("aria-pressed", audioEnabled ? "true" : "false");
+  const isMuted = !audioEnabled || audioVolume <= 0;
+  const nextLabel = isMuted ? "Unmute audio" : "Mute audio";
+  audioToggle.classList.toggle("is-muted", isMuted);
+  audioToggle.setAttribute("aria-pressed", isMuted ? "false" : "true");
   audioToggle.setAttribute("aria-label", nextLabel);
   audioToggle.setAttribute("title", nextLabel);
-  audioState.textContent = audioEnabled ? "On" : "Muted";
+  audioState.textContent = isMuted ? "Muted" : "On";
 
   if (audioVolumeSlider) {
-    audioVolumeSlider.value = String(Math.round(audioVolume * 100));
+    const nextVolume = Math.round(audioVolume * 100);
+    audioVolumeSlider.value = String(nextVolume);
     audioVolumeSlider.disabled = !audioEnabled;
+    audioVolumeSlider.setAttribute("aria-label", `Audio volume ${nextVolume}%`);
   }
 };
 
@@ -903,6 +906,7 @@ if (audioVolumeSlider) {
     audioVolume = Math.min(1, Math.max(0, Number(audioVolumeSlider.value) / 100));
     window.localStorage.setItem(audioVolumeStorageKey, String(audioVolume));
     updateWelcomeAmbientLevel();
+    syncAudioUi();
   });
 
   const releaseAudioSliderFocus = () => {

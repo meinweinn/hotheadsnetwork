@@ -117,18 +117,19 @@
           <span class="audio-toggle__state sr-only" data-audio-state>On</span>
         </button>
 
-        <label class="audio-volume" aria-label="Audio volume">
-          <span class="sr-only">Audio volume</span>
-          <input
-            class="audio-volume__slider"
-            type="range"
-            min="0"
-            max="100"
+          <label class="audio-volume" aria-label="Audio volume">
+            <span class="audio-volume__mark audio-volume__mark--low" aria-hidden="true">-</span>
+            <input
+              class="audio-volume__slider"
+              type="range"
+              min="0"
+              max="100"
             step="1"
-            value="100"
-            data-audio-volume
-          />
-        </label>
+              value="100"
+              data-audio-volume
+            />
+            <span class="audio-volume__mark audio-volume__mark--high" aria-hidden="true">+</span>
+          </label>
       </div>
 
       <section class="admin-panel" data-admin-panel aria-hidden="true" hidden>
