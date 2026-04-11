@@ -2,7 +2,7 @@ const themeStorageKey = "hotheads-network-theme-v1";
 const audioStorageKey = "hotheads-network-audio-v1";
 const audioVolumeStorageKey = "hotheads-network-audio-volume-v1";
 const adminSessionStorageKey = "hotheads-network-admin-session-v1";
-const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbxSIcNKIbCB9j_hGH3Un181s3byo222bxg2gelA-uAZkWg-KbnDnr1JWi0yyfadETpzfw/exec";
+const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbzv7c73FZqQqEt0_94esvri1_xKnDbu_G_FEMNdC28OVqWAZj2fKYGBX8OLrOTQbLez1g/exec";
 const validThemes = new Set(["inferno", "toxic", "abyss"]);
 const audioMasterMultiplier = 2;
 const ambientMultiplier = 2;
@@ -184,21 +184,18 @@ const submitOperatorToGoogleSheets = async (payload) => {
 };
 
 const deleteOperatorFromGoogleSheets = async (payload) => {
-  if (!googleScriptWebAppUrl) {
-    throw new Error("Google Sheets endpoint not configured");
+  const response = await requestGoogleScriptJsonp({
+    action: "deleteOperator",
+    campaign_id: payload.campaign_id,
+    operator_handle: payload.operator_handle,
+    removed_by: payload.removed_by || "",
+  });
+
+  if (!response || !response.ok || !response.deleted) {
+    throw new Error("Operator could not be deleted from Google Sheets");
   }
 
-  await fetch(googleScriptWebAppUrl, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8",
-    },
-    body: JSON.stringify({
-      type: "deleteOperator",
-      ...payload,
-    }),
-  });
+  return response;
 };
 
 const requestGoogleScriptJsonp = (params) =>
