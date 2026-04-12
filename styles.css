@@ -3294,35 +3294,40 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   }
 
   .stage-track {
-    width: 300%;
-    display: flex;
-  }
+      width: 100%;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 100%;
+    }
 
   .stage-viewport {
-    overflow-x: auto;
-    overflow-y: visible;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
+      overflow-x: auto;
+      overflow-y: visible;
+      scroll-snap-type: x mandatory;
+      scroll-snap-stop: always;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
 
   .stage-viewport::-webkit-scrollbar {
     display: none;
   }
 
   .stage-panel {
-    position: relative;
-    inset: auto;
-    flex: 0 0 33.333333%;
-    width: 33.333333%;
-    padding-inline: 0.35rem;
-    opacity: 1;
-    pointer-events: auto;
-    transform: none;
-    filter: none;
-    animation: none;
-    scroll-snap-align: center;
-  }
+      position: relative;
+      inset: auto;
+      min-width: 100%;
+      width: 100%;
+      padding-inline: 0;
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+      filter: none;
+      animation: none;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
 
   .stage-nav {
     display: none;
@@ -3631,14 +3636,14 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   }
 
   .stage-track {
-    width: 300%;
-  }
+      width: 100%;
+    }
 
   .stage-panel {
-    flex-basis: 33.333333%;
-    width: 33.333333%;
-    padding-inline: 0.2rem;
-  }
+      min-width: 100%;
+      width: 100%;
+      padding-inline: 0;
+    }
 
   .stage-card--welcome {
     grid-template-rows: auto auto;
