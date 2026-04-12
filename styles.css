@@ -3215,7 +3215,7 @@ body.is-firefox .stage-panel.is-exiting-to-right {
 
   .welcome-stage {
       min-height: auto;
-      width: min(100% - 1.2rem, 100%);
+      width: min(100% - 1.5rem, 100%);
       padding-top: 5.2rem;
       padding-bottom: 3.9rem;
     }
@@ -3282,10 +3282,10 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   }
 
   .welcome-hero {
-    width: 100%;
-    padding: 2rem 1rem;
-    min-height: auto;
-  }
+      width: 100%;
+      padding: 1.7rem 0.85rem;
+      min-height: auto;
+    }
 
   .stage-viewport,
   .stage-track,
@@ -3435,8 +3435,9 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   .stage-panel--projects .project-stack,
   .stage-panel--apply .network-form,
   .stage-panel__header {
-    width: 100%;
-  }
+      width: min(100%, calc(100% - 0.35rem));
+      margin-inline: auto;
+    }
 
   .project-card__top {
     gap: 0.9rem;
@@ -3631,9 +3632,9 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   }
 
   .welcome-hero {
-    padding: 1.25rem 0.8rem;
-    border-radius: 24px;
-  }
+      padding: 1.1rem 0.72rem;
+      border-radius: 24px;
+    }
 
   .stage-track {
       width: 100%;
@@ -3654,10 +3655,12 @@ body.is-firefox .stage-panel.is-exiting-to-right {
     font-size: clamp(1.15rem, 7vw, 1.6rem);
   }
 
-  .project-card,
-  .network-form {
-    border-radius: 20px;
-  }
+    .project-card,
+    .network-form {
+      border-radius: 20px;
+      padding-left: 0.9rem;
+      padding-right: 0.9rem;
+    }
 
   .project-card__top {
     display: grid;
