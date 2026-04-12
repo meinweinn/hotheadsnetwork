@@ -3439,6 +3439,11 @@ body.is-firefox .stage-panel.is-exiting-to-right {
       margin-inline: auto;
     }
 
+  .stage-panel__header {
+    gap: 0.38rem;
+    margin-bottom: 0.8rem;
+  }
+
   .project-card__top {
     gap: 0.9rem;
   }
@@ -3652,14 +3657,51 @@ body.is-firefox .stage-panel.is-exiting-to-right {
   }
 
   .stage-panel__header h2 {
-    font-size: clamp(1.15rem, 7vw, 1.6rem);
-  }
+      font-size: clamp(1.15rem, 7vw, 1.6rem);
+      letter-spacing: 0.05em;
+    }
 
-    .project-card,
+    .stage-panel__header .eyebrow {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+    }
+
+      .project-card,
     .network-form {
-      border-radius: 20px;
-      padding-left: 0.9rem;
-      padding-right: 0.9rem;
+        border-radius: 20px;
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+      }
+
+    .network-form {
+      gap: 0.8rem;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .network-check {
+      min-height: 50px;
+      padding: 0.82rem 0.85rem;
+      gap: 0.65rem;
+    }
+
+    .network-check__label,
+    .network-form span {
+      line-height: 1.45;
+    }
+
+    .welcome-button--rules,
+    .welcome-button--sheet,
+    .welcome-button--intake {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .welcome-button--intake {
+      min-height: 52px;
     }
 
   .project-card__top {
