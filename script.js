@@ -21,6 +21,10 @@ const audioVolumeSlider = document.querySelector("[data-audio-volume]");
 const adminToggle = document.querySelector("[data-admin-toggle]");
 const adminPanel = document.querySelector("[data-admin-panel]");
 const adminCloseButtons = document.querySelectorAll("[data-admin-close]");
+const rulesPanel = document.querySelector("[data-rules-panel]");
+const rulesOpenButtons = document.querySelectorAll("[data-rules-open]");
+const rulesCloseButtons = document.querySelectorAll("[data-rules-close]");
+const rulesConfirmButton = document.querySelector("[data-rules-confirm]");
 const adminLoginForm = document.querySelector("[data-admin-login]");
 const adminPasswordInput = document.querySelector("[data-admin-password]");
 const adminPasswordToggle = document.querySelector("[data-admin-password-toggle]");
@@ -40,6 +44,7 @@ const stageTrack = document.querySelector("[data-stage-track]");
 const stagePanels = document.querySelectorAll("[data-stage-panel]");
 const stageNavButtons = document.querySelectorAll("[data-stage-nav]");
 const networkForm = document.querySelector("[data-network-form]");
+const intakeSubmitButton = document.querySelector("[data-intake-submit]");
 const interactiveNodes = document.querySelectorAll("button, a");
 
 const themeBackgrounds = {
@@ -66,6 +71,7 @@ let isStageAnimating = false;
 let mobileStageScrollTimer = null;
 let adminPanelCloseTimer = null;
 let adminSession = null;
+let rulesAccepted = false;
 
 const adminUsers = [
   {
@@ -395,6 +401,21 @@ const syncAudioUi = () => {
   }
 };
 
+const syncRulesUi = () => {
+  if (intakeSubmitButton) {
+    intakeSubmitButton.disabled = !rulesAccepted;
+  }
+
+  rulesOpenButtons.forEach((button) => {
+    button.classList.remove("is-invalid");
+    button.classList.toggle("is-confirmed", rulesAccepted);
+    const label = button.querySelector(".welcome-button__label");
+    if (label) {
+      label.textContent = rulesAccepted ? "Rules Confirmed" : "View Full Rules";
+    }
+  });
+};
+
 const renderAdminCapabilities = (role) => {
   if (!adminCapabilities) {
     return;
@@ -547,6 +568,33 @@ const closeAdminPanel = () => {
   window.clearTimeout(adminPanelCloseTimer);
   adminPanelCloseTimer = window.setTimeout(() => {
     adminPanel.hidden = true;
+  }, adminPanelTransitionMs);
+};
+
+const openRulesPanel = () => {
+  if (!rulesPanel) {
+    return;
+  }
+
+  rulesPanel.hidden = false;
+  rulesPanel.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    rulesPanel.classList.add("is-open");
+  });
+  uiSound("click");
+};
+
+const closeRulesPanel = () => {
+  if (!rulesPanel) {
+    return;
+  }
+
+  rulesPanel.classList.remove("is-open");
+  rulesPanel.setAttribute("aria-hidden", "true");
+  window.setTimeout(() => {
+    if (rulesPanel && !rulesPanel.classList.contains("is-open")) {
+      rulesPanel.hidden = true;
+    }
   }, adminPanelTransitionMs);
 };
 
@@ -705,6 +753,7 @@ const applyTheme = (theme, immediate = false) => {
 
 applyTheme(initialTheme, true);
 syncAudioUi();
+syncRulesUi();
 syncAdminUi();
 
 const syncStageUi = () => {
@@ -933,6 +982,27 @@ adminCloseButtons.forEach((button) => {
   button.addEventListener("click", closeAdminPanel);
 });
 
+rulesOpenButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    openRulesPanel();
+  });
+});
+
+rulesCloseButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    closeRulesPanel();
+  });
+});
+
+if (rulesConfirmButton) {
+  rulesConfirmButton.addEventListener("click", () => {
+    rulesAccepted = true;
+    syncRulesUi();
+    uiSound("confirm");
+    closeRulesPanel();
+  });
+}
+
 if (adminLoginForm) {
   adminLoginForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -1105,6 +1175,9 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && adminPanel && !adminPanel.hidden) {
     closeAdminPanel();
   }
+  if (event.key === "Escape" && rulesPanel && !rulesPanel.hidden) {
+    closeRulesPanel();
+  }
 });
 
 themeChoices.forEach((choice) => {
@@ -1227,6 +1300,16 @@ if (networkForm) {
   networkForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
+    if (!rulesAccepted) {
+      rulesOpenButtons.forEach((button) => {
+        button.classList.remove("is-invalid");
+        void button.offsetWidth;
+        button.classList.add("is-invalid");
+      });
+      openRulesPanel();
+      return;
+    }
+
     const requiredFields = networkForm.querySelectorAll("[data-required-field]");
     let hasError = false;
 
@@ -1259,6 +1342,7 @@ if (networkForm) {
       twitter: String(formData.get("twitter") || "").trim(),
       wallet: String(formData.get("wallet") || "").trim(),
       twitter_follow_confirm: formData.get("twitter_follow_confirm") === "on",
+      rules_accepted: rulesAccepted,
     };
 
     if (submitButton) {

@@ -132,8 +132,8 @@
           </label>
       </div>
 
-      <section class="admin-panel" data-admin-panel aria-hidden="true" hidden>
-        <div class="admin-panel__backdrop" data-admin-close></div>
+        <section class="admin-panel" data-admin-panel aria-hidden="true" hidden>
+          <div class="admin-panel__backdrop" data-admin-close></div>
         <div class="admin-panel__card" role="dialog" aria-modal="true" aria-labelledby="admin-panel-title">
           <div class="admin-panel__head">
             <div>
@@ -184,8 +184,48 @@
 
             <div class="admin-capabilities" data-admin-capabilities></div>
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
+
+        <section class="rules-panel" data-rules-panel aria-hidden="true" hidden>
+          <div class="rules-panel__backdrop" data-rules-close></div>
+          <div class="rules-panel__card" role="dialog" aria-modal="true" aria-labelledby="rules-panel-title">
+            <div class="rules-panel__head">
+              <div>
+                <span class="eyebrow">Campaign Rules</span>
+                <h2 id="rules-panel-title">Operator Entry Conditions</h2>
+              </div>
+              <button class="rules-panel__close" type="button" aria-label="Close rules panel" data-rules-close>&times;</button>
+            </div>
+
+            <div class="rules-panel__body">
+              <div class="rules-group">
+                <h3 class="rules-group__title">Engagement Rules</h3>
+                <ol class="rules-list">
+                  <li>Only submit if you actively follow the required campaign socials and will stay engaged for the campaign duration.</li>
+                  <li>When the project reaches a market cap of 5 million, at least one post should be engaged with.</li>
+                  <li>When the project reaches a market cap of 10 million, a post should be made on Twitter.</li>
+                  <li>The project should be shared within Friends & Family (FnFs) groups.</li>
+                </ol>
+              </div>
+
+              <div class="rules-group">
+                <h3 class="rules-group__title">Selling Rules</h3>
+                <ol class="rules-list">
+                  <li>No selling should take place during the first 3 days.</li>
+                  <li>Selling is not permitted unless the 5 million marketcap is fulfilled.</li>
+                  <li>After day 7, if the project has not exceeded a market cap of 5 million, selling is permitted.</li>
+                </ol>
+              </div>
+
+              <div class="rules-panel__actions">
+                <button class="welcome-button welcome-button--primary welcome-button--rules-confirm" type="button" data-rules-confirm>
+                  <span class="welcome-button__label">I Read And Confirm</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
       <button
         class="stage-nav stage-nav--left"
@@ -223,9 +263,9 @@
                   <p class="project-card__body">
                     Hover to inspect milestone progression.
                   </p>
-                  <div class="project-card__details" aria-hidden="true">
-                    <div class="project-card__actions">
-                      <div class="social-links" aria-label="Project social links">
+                    <div class="project-card__details" aria-hidden="true">
+                      <div class="project-card__actions">
+                        <div class="social-links" aria-label="Project social links">
                         <a
                           class="social-link"
                           href="https://x.com/brentcrude_"
@@ -273,12 +313,31 @@
                         aria-label="Copy contract address"
                       >
                         <span class="ca-copy__label">CA</span>
-                        <span class="ca-copy__state sr-only" data-copy-state>Copy</span>
-                      </button>
-                    </div>
+                          <span class="ca-copy__state sr-only" data-copy-state>Copy</span>
+                        </button>
+                      </div>
 
-                    <div class="milestone-list">
-                      <div class="milestone-item is-complete">
+                      <div class="project-card__info-grid" aria-label="Campaign snapshot">
+                        <article class="project-card__info-card">
+                          <span>Launch Time</span>
+                          <strong>April 7, 2026</strong>
+                        </article>
+                        <article class="project-card__info-card">
+                          <span>Allocation Info</span>
+                          <strong>Drop 01 // Drop 02</strong>
+                        </article>
+                        <article class="project-card__info-card">
+                          <span>Payout Status</span>
+                          <strong class="project-card__info-status">
+                            <span class="project-card__info-status-tag project-card__info-status--paid">Paid</span>
+                            <strong> // </strong>
+                            <span class="project-card__info-status-tag project-card__info-status--pending">Pending</span>
+                          </strong>
+                        </article>
+                      </div>
+
+                      <div class="milestone-list">
+                        <div class="milestone-item is-complete">
                         <span class="milestone-item__check" aria-hidden="true">✓</span>
                         <div class="milestone-item__copy">
                           <strong>5M MCAP</strong>
@@ -390,6 +449,11 @@
                   <span class="network-check__box" aria-hidden="true"></span>
                   <span class="network-check__label">I confirm that I follow on Twitter.</span>
                 </label>
+                <div class="network-form__actions network-form__full">
+                  <button class="welcome-button welcome-button--ghost welcome-button--rules" type="button" data-rules-open>
+                    <span class="welcome-button__label">View Full Rules</span>
+                  </button>
+                </div>
                 <div class="network-form__actions network-form__actions--admin network-form__full" data-admin-sheet-access hidden>
                   <a
                     class="welcome-button welcome-button--primary welcome-button--sheet"
@@ -401,7 +465,7 @@
                   </a>
                 </div>
                 <div class="network-form__actions network-form__full">
-                  <button class="welcome-button welcome-button--primary welcome-button--intake" type="submit">
+                  <button class="welcome-button welcome-button--primary welcome-button--intake" type="submit" data-intake-submit disabled>
                     <span class="welcome-button__label">Save Intake</span>
                   </button>
                 </div>
