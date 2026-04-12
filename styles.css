@@ -1918,8 +1918,8 @@ body:not(.is-theme-gate) .theme-gate {
     0 0 34px rgba(156, 240, 107, 0.18);
 }
 
-.welcome-button--intake:disabled {
-  cursor: default;
+.welcome-button--intake.is-locked {
+  cursor: not-allowed;
   opacity: 0.88;
 }
 

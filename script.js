@@ -403,7 +403,9 @@ const syncAudioUi = () => {
 
 const syncRulesUi = () => {
   if (intakeSubmitButton) {
-    intakeSubmitButton.disabled = !rulesAccepted;
+    intakeSubmitButton.disabled = false;
+    intakeSubmitButton.classList.toggle("is-locked", !rulesAccepted);
+    intakeSubmitButton.setAttribute("aria-disabled", rulesAccepted ? "false" : "true");
   }
 
   rulesOpenButtons.forEach((button) => {
@@ -1394,6 +1396,22 @@ if (networkForm) {
           }
         }, 1600);
       });
+  });
+}
+
+if (intakeSubmitButton) {
+  intakeSubmitButton.addEventListener("click", (event) => {
+    if (rulesAccepted) {
+      return;
+    }
+
+    event.preventDefault();
+    rulesOpenButtons.forEach((button) => {
+      button.classList.remove("is-invalid");
+      void button.offsetWidth;
+      button.classList.add("is-invalid");
+    });
+    uiSound("click");
   });
 }
 
