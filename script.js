@@ -2,6 +2,7 @@ const themeStorageKey = "hotheads-network-theme-v1";
 const audioStorageKey = "hotheads-network-audio-v1";
 const audioVolumeStorageKey = "hotheads-network-audio-volume-v1";
 const adminSessionStorageKey = "hotheads-network-admin-session-v1";
+const operatorsCacheStorageKey = "hotheads-network-operators-cache-v1";
 const googleScriptWebAppUrl = "https://script.google.com/macros/s/AKfycbzv7c73FZqQqEt0_94esvri1_xKnDbu_G_FEMNdC28OVqWAZj2fKYGBX8OLrOTQbLez1g/exec";
 const validThemes = new Set(["inferno", "toxic", "abyss"]);
 const audioMasterMultiplier = 2;
@@ -45,6 +46,7 @@ const stagePanels = document.querySelectorAll("[data-stage-panel]");
 const stageNavButtons = document.querySelectorAll("[data-stage-nav]");
 const networkForm = document.querySelector("[data-network-form]");
 const intakeSubmitButton = document.querySelector("[data-intake-submit]");
+const intakeSuccess = document.querySelector("[data-intake-success]");
 const interactiveNodes = document.querySelectorAll("button, a");
 
 const themeBackgrounds = {
@@ -153,6 +155,32 @@ const escapeHtml = (value) =>
 
 const canManageOperators = () =>
   Boolean(adminSession && (adminSession.role === "admin" || adminSession.role === "editor"));
+
+const readOperatorsCache = () => {
+  try {
+    const raw = window.localStorage.getItem(operatorsCacheStorageKey);
+    if (!raw) {
+      return {};
+    }
+
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeOperatorsCache = (campaignId, operators) => {
+  const cache = readOperatorsCache();
+  cache[campaignId] = Array.isArray(operators) ? operators : [];
+  window.localStorage.setItem(operatorsCacheStorageKey, JSON.stringify(cache));
+};
+
+const readCampaignOperatorsFromCache = (campaignId) => {
+  const cache = readOperatorsCache();
+  const operators = cache[campaignId];
+  return Array.isArray(operators) ? operators : [];
+};
 
 document.body.classList.toggle("is-firefox", isFirefox);
 
@@ -525,20 +553,28 @@ const renderOperatorRoster = (campaignId) => {
 };
 
 const loadCampaignOperators = async (campaignId) => {
+  let didLoadFromSheet = false;
+
   try {
     const response = await requestGoogleScriptJsonp({
       action: "listOperators",
       campaign_id: campaignId,
     });
 
-    if (response && response.ok && Array.isArray(response.operators)) {
-      const nextOperators = response.operators
-        .map((entry) => String(entry.operator_handle || "").trim())
-        .filter(Boolean);
+      if (response && response.ok && Array.isArray(response.operators)) {
+        const nextOperators = response.operators
+          .map((entry) => String(entry.operator_handle || "").trim())
+          .filter(Boolean);
 
-      campaignOperatorsState[campaignId] = Array.from(new Set(nextOperators));
-    }
+        campaignOperatorsState[campaignId] = Array.from(new Set(nextOperators));
+        writeOperatorsCache(campaignId, campaignOperatorsState[campaignId]);
+        didLoadFromSheet = true;
+      }
   } catch {}
+
+  if (!didLoadFromSheet) {
+    campaignOperatorsState[campaignId] = readCampaignOperatorsFromCache(campaignId);
+  }
 
   campaignOperatorsLoadState[campaignId] = true;
 
@@ -798,6 +834,7 @@ const syncStageUi = () => {
       nextLabel.textContent = currentStageIndex === 0 ? "Back" : "Apply";
     }
   }
+
 };
 
 const goToStage = (nextIndex) => {
@@ -1078,6 +1115,7 @@ operatorForms.forEach((form) => {
     }
 
     campaignOperatorsState[campaignId] = [...currentOperators, operatorHandle];
+    writeOperatorsCache(campaignId, campaignOperatorsState[campaignId]);
     renderOperatorRoster(campaignId);
     input.value = "";
     submitButton.classList.add("is-saved");
@@ -1094,6 +1132,7 @@ operatorForms.forEach((form) => {
       status: "active",
     }).catch(() => {
       campaignOperatorsState[campaignId] = currentOperators;
+      writeOperatorsCache(campaignId, campaignOperatorsState[campaignId]);
       renderOperatorRoster(campaignId);
       input.classList.remove("is-invalid");
       void input.offsetWidth;
@@ -1125,6 +1164,7 @@ operatorRosters.forEach((roster) => {
     }
 
     campaignOperatorsState[campaignId] = nextOperators;
+    writeOperatorsCache(campaignId, campaignOperatorsState[campaignId]);
     renderOperatorRoster(campaignId);
     uiSound("click");
 
@@ -1134,6 +1174,7 @@ operatorRosters.forEach((roster) => {
       removed_by: adminSession?.username || "",
     }).catch(() => {
       campaignOperatorsState[campaignId] = currentOperators;
+      writeOperatorsCache(campaignId, campaignOperatorsState[campaignId]);
       renderOperatorRoster(campaignId);
     });
   });
@@ -1363,6 +1404,10 @@ if (networkForm) {
         if (submitButton) {
           submitButton.classList.add("is-saved");
         }
+        if (intakeSuccess) {
+          intakeSuccess.classList.add("is-visible");
+          intakeSuccess.setAttribute("aria-hidden", "false");
+        }
         if (submitLabel) {
           submitLabel.textContent = "Saved";
         }
@@ -1387,6 +1432,10 @@ if (networkForm) {
           if (submitButton) {
             submitButton.disabled = false;
             submitButton.classList.remove("is-saved");
+          }
+          if (intakeSuccess) {
+            intakeSuccess.classList.remove("is-visible");
+            intakeSuccess.setAttribute("aria-hidden", "true");
           }
           if (submitLabel) {
             submitLabel.textContent = "Save Intake";
